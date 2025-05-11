@@ -10,6 +10,7 @@ import io.javalin.config.PrivateConfig
 import io.javalin.http.Context
 import io.javalin.http.staticfiles.Location
 import io.javalin.http.staticfiles.StaticFileConfig
+import io.javalin.security.RouteRole
 import io.javalin.util.JavalinException
 import io.javalin.util.JavalinLogger
 import io.javalin.util.javalinLazy
@@ -85,15 +86,15 @@ class JettyResourceHandler(val pvt: PrivateConfig) : JavalinResourceHandler {
 
     private val Context.target get() = this.req().requestURI.removePrefix(this.req().contextPath)
 
-    public fun setResourceRouteRules(ctx: Context) {
-        for(handler in nonSkippedHandlers(ctx.jettyReq())) {
+    override fun getResourceRouteRoles(ctx: Context): Set<RouteRole> {
+        nonSkippedHandlers(ctx.jettyReq()).forEach { handler ->
             val target = ctx.target
             val fileOrWelcomeFile = fileOrWelcomeFile(handler, target)
             if(fileOrWelcomeFile != null) {
-                ctx.setRouteRoles(handler.config.fileRoles)
-                break
+                return handler.config.fileRoles;
             }
         }
+        return emptySet();
     }
 
 }

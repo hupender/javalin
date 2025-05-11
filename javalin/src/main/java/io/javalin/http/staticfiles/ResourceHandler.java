@@ -1,6 +1,10 @@
 package io.javalin.http.staticfiles;
 
 import io.javalin.http.Context;
+import io.javalin.security.RouteRole;
+
+import javax.swing.text.MutableAttributeSet;
+import java.util.Set;
 
 public interface ResourceHandler {
     boolean canHandle(Context context);
@@ -8,4 +12,6 @@ public interface ResourceHandler {
     boolean handle(Context context);
 
     boolean addStaticFileConfig(StaticFileConfig config);
+
+    Set<RouteRole> getResourceRouteRoles(Context ctx);
 }
