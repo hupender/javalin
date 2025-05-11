@@ -184,7 +184,8 @@ class JavalinServletContext(
     }
 
     override fun routeRoles() = routeRoles
-    internal fun setRouteRoles(routeRoles: Set<RouteRole>) {
+
+    override fun setRouteRoles(routeRoles: Set<RouteRole>) {
         this.routeRoles = routeRoles
     }
 

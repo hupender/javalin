@@ -6,6 +6,7 @@ import io.javalin.http.HandlerType.HEAD
 import io.javalin.http.MethodNotAllowedResponse
 import io.javalin.http.servlet.SubmitOrder.LAST
 import io.javalin.http.util.MethodNotAllowedUtil
+import io.javalin.jetty.JettyResourceHandler
 import io.javalin.router.Endpoint
 import io.javalin.router.EndpointNotFound
 import io.javalin.security.Roles
@@ -24,6 +25,10 @@ object DefaultTasks {
     val BEFORE_MATCHED = TaskInitializer<JavalinServletContext> { submitTask, servlet, ctx, requestUri ->
         val willMatch by javalinLazy {
             ctx.setRouteRoles(servlet.matchedRoles(ctx, requestUri)) // set roles for the matched handler
+            if(ctx.routeRoles().isEmpty() && servlet.cfg.pvt.resourceHandler?.canHandle(ctx) == true) {
+                var handler = servlet.cfg.pvt.resourceHandler as JettyResourceHandler
+                handler.setResourceRouteRules(ctx)
+            }
             servlet.willMatch(ctx, requestUri)
         }
         val httpHandlerOrNull by javalinLazy {

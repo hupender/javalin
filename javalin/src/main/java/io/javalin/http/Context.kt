@@ -525,6 +525,8 @@ interface Context {
 
     fun routeRoles(): Set<RouteRole>
 
+    fun setRouteRoles(routeRole: Set<RouteRole>)
+
 }
 
 /** Reified version of [Context.json] (Kotlin only) */

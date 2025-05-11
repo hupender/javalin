@@ -85,6 +85,17 @@ class JettyResourceHandler(val pvt: PrivateConfig) : JavalinResourceHandler {
 
     private val Context.target get() = this.req().requestURI.removePrefix(this.req().contextPath)
 
+    public fun setResourceRouteRules(ctx: Context) {
+        for(handler in nonSkippedHandlers(ctx.jettyReq())) {
+            val target = ctx.target
+            val fileOrWelcomeFile = fileOrWelcomeFile(handler, target)
+            if(fileOrWelcomeFile != null) {
+                ctx.setRouteRoles(handler.config.fileRoles)
+                break
+            }
+        }
+    }
+
 }
 
 open class ConfigurableHandler(val config: StaticFileConfig, jettyServer: Server) : ResourceHandler() {
