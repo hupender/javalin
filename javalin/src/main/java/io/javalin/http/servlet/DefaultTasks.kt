@@ -23,16 +23,16 @@ object DefaultTasks {
     }
 
     val BEFORE_MATCHED = TaskInitializer<JavalinServletContext> { submitTask, servlet, ctx, requestUri ->
+        val httpHandlerOrNull by javalinLazy {
+            servlet.router.findHttpHandlerEntries(ctx.method(), requestUri).firstOrNull()
+        }
         val willMatch by javalinLazy {
             ctx.setRouteRoles(servlet.matchedRoles(ctx, requestUri)) // set roles for the matched handler
-            if(ctx.routeRoles().isEmpty() && servlet.cfg.pvt.resourceHandler?.canHandle(ctx) == true) {
+            if(httpHandlerOrNull == null && (ctx.method() == HEAD || ctx.method() == GET) && servlet.cfg.pvt.resourceHandler?.canHandle(ctx) == true) {
                 var handler = servlet.cfg.pvt.resourceHandler as JettyResourceHandler
                 handler.setResourceRouteRules(ctx)
             }
             servlet.willMatch(ctx, requestUri)
-        }
-        val httpHandlerOrNull by javalinLazy {
-            servlet.router.findHttpHandlerEntries(ctx.method(), requestUri).firstOrNull()
         }
         servlet.router.findHttpHandlerEntries(HandlerType.BEFORE_MATCHED, requestUri).forEach { entry ->
             if (willMatch) {
