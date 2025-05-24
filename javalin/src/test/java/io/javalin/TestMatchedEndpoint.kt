@@ -6,13 +6,11 @@ import io.javalin.apibuilder.ApiBuilder.get
 import io.javalin.apibuilder.CrudHandler
 import io.javalin.http.Context
 import io.javalin.http.HandlerType
-import io.javalin.http.HttpStatus
 import io.javalin.router.Endpoint
 import io.javalin.router.EndpointMetadata
 import io.javalin.security.Roles
 import io.javalin.security.RouteRole
 import io.javalin.testing.TestUtil
-import io.javalin.testing.httpCode
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.Test
 
@@ -91,7 +89,5 @@ class TestMatchedEndpoint {
             http.get(it)
             assertThat(data).isEqualTo(this.customMetaData.name)
         }
-//        http.get("/test1")
-//        assertThat(data).isEqualTo(this.customMetaData.name)
     }
 }
