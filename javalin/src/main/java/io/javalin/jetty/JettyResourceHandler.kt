@@ -109,7 +109,7 @@ class JettyResourceHandler(val pvt: PrivateConfig) : JavalinResourceHandler {
     private val Context.target get() = this.req().requestURI.removePrefix(this.req().contextPath)
 
     override fun getResourceRouteRoles(ctx: Context): Set<RouteRole> {
-        nonSkippedHandlers(ctx.jettyReq()).forEach { handler ->
+        nonSkippedHandlers(ctx.req()).forEach { handler ->
             val target = URLDecoder.decode(ctx.target, "UTF-8")
             val fileOrWelcomeFile = fileOrWelcomeFile(handler, target)
             if (fileOrWelcomeFile != null) {
