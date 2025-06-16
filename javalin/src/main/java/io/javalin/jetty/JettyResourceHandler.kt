@@ -10,6 +10,7 @@ import io.javalin.config.PrivateConfig
 import io.javalin.http.Context
 import io.javalin.http.staticfiles.Location
 import io.javalin.http.staticfiles.StaticFileConfig
+import io.javalin.security.RouteRole
 import io.javalin.util.JavalinException
 import io.javalin.util.JavalinLogger
 import io.javalin.util.javalinLazy
@@ -30,6 +31,7 @@ import org.eclipse.jetty.util.URIUtil
 import org.eclipse.jetty.util.resource.Resource
 import org.eclipse.jetty.util.resource.ResourceFactory
 import java.nio.ByteBuffer
+import java.net.URLDecoder
 import java.nio.file.AccessDeniedException
 import java.nio.file.Files
 import kotlin.io.path.Path
@@ -50,7 +52,8 @@ class JettyResourceHandler(val pvt: PrivateConfig) : JavalinResourceHandler {
 
     override fun canHandle(ctx: Context) = nonSkippedHandlers(ctx.req()).any { handler ->
         try {
-            fileOrWelcomeFile(handler, ctx.target) != null
+            val target = URLDecoder.decode(ctx.target, "UTF-8")
+            fileOrWelcomeFile(handler, target) != null
         } catch (e: Exception) {
             e.message?.contains("Rejected alias reference") == true ||  // we want to say these are un-handleable (404)
                 e.message?.contains("Failed alias check") == true // we want to say these are un-handleable (404)
@@ -60,7 +63,7 @@ class JettyResourceHandler(val pvt: PrivateConfig) : JavalinResourceHandler {
     override fun handle(ctx: Context): Boolean {
         nonSkippedHandlers(ctx.req()).forEach { handler ->
             try {
-                val target = ctx.target
+                val target = URLDecoder.decode(ctx.target, "UTF-8")
                 val fileOrWelcomeFile = fileOrWelcomeFile(handler, target)
                 if (fileOrWelcomeFile != null) {
                     handler.config.headers.forEach { ctx.header(it.key, it.value) } // set user headers
@@ -104,6 +107,17 @@ class JettyResourceHandler(val pvt: PrivateConfig) : JavalinResourceHandler {
         handlers.asSequence().filter { !it.config.skipFileFunction(request) }
 
     private val Context.target get() = this.req().requestURI.removePrefix(this.req().contextPath)
+
+    override fun getResourceRouteRoles(ctx: Context): Set<RouteRole> {
+        nonSkippedHandlers(ctx.jettyReq()).forEach { handler ->
+            val target = URLDecoder.decode(ctx.target, "UTF-8")
+            val fileOrWelcomeFile = fileOrWelcomeFile(handler, target)
+            if (fileOrWelcomeFile != null) {
+                return handler.config.roles;
+            }
+        }
+        return emptySet();
+    }
 
 }
 
